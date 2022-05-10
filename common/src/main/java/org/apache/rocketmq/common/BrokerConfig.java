@@ -116,7 +116,9 @@ public class BrokerConfig {
 
     private boolean slaveReadEnable = false;
 
+    // 如果消费组消息消费堆积是否禁用该消费组继续消费消息
     private boolean disableConsumeIfConsumerReadSlowly = false;
+    // 消息消费堆积阈值
     private long consumerFallbehindThreshold = 1024L * 1024 * 1024 * 16;
 
     private boolean brokerFastFailureEnable = true;
