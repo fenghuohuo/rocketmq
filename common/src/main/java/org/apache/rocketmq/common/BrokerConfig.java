@@ -55,7 +55,7 @@ public class BrokerConfig {
     @ImportantField
     private String msgTraceTopicName = TopicValidator.RMQ_SYS_TRACE_TOPIC;
     @ImportantField
-    private boolean traceTopicEnable = false;
+    private boolean traceTopicEnable = true;
     /**
      * thread numbers for send message thread pool.
      */

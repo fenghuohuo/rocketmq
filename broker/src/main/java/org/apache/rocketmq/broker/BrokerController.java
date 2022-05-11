@@ -178,6 +178,8 @@ public class BrokerController {
         this.nettyServerConfig = nettyServerConfig;
         this.nettyClientConfig = nettyClientConfig;
         this.messageStoreConfig = messageStoreConfig;
+        // 为什么写成这样？ 因为没有必要注入到bean中？循环依赖的问题？
+        // 因为没有使用spring的框架。。。
         this.consumerOffsetManager = new ConsumerOffsetManager(this);
         this.topicConfigManager = new TopicConfigManager(this);
         this.pullMessageProcessor = new PullMessageProcessor(this);
@@ -235,11 +237,15 @@ public class BrokerController {
         boolean result = this.topicConfigManager.load();
 
         result = result && this.consumerOffsetManager.load();
+        // mark2 看起来像是用来存储group信息的配置
         result = result && this.subscriptionGroupManager.load();
+        // mark2 看起来像是用来存储consumer的信息
         result = result && this.consumerFilterManager.load();
 
+        // mark2 应该是表示有数据恢复了result就是true
         if (result) {
             try {
+                // mark2 这里应该是恢复message数据
                 this.messageStore =
                     new DefaultMessageStore(this.messageStoreConfig, this.brokerStatsManager, this.messageArrivingListener,
                         this.brokerConfig);
