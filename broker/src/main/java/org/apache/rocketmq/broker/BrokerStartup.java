@@ -247,12 +247,14 @@ public class BrokerStartup {
             // mark1 记住所有的配置，以防止被丢弃
             controller.getConfiguration().registerConfig(properties);
 
+            // mark1 初始化brokerController
             boolean initResult = controller.initialize();
             if (!initResult) {
                 controller.shutdown();
                 System.exit(-3);
             }
 
+            // mark1 停止线程的方法
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;
                 private AtomicInteger shutdownTimes = new AtomicInteger(0);

@@ -271,6 +271,7 @@ public class BrokerController {
             NettyServerConfig fastConfig = (NettyServerConfig) this.nettyServerConfig.clone();
             fastConfig.setListenPort(nettyServerConfig.getListenPort() - 2);
             this.fastRemotingServer = new NettyRemotingServer(fastConfig, this.clientHousekeepingService);
+            // mark1 设置几个线程池，主要是设置线程池的队列
             this.sendMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getSendMessageThreadPoolNums(),
                 this.brokerConfig.getSendMessageThreadPoolNums(),
@@ -435,15 +436,20 @@ public class BrokerController {
                 }, 1000 * 10, 1000 * 60 * 2, TimeUnit.MILLISECONDS);
             }
 
+            // mark1 启用多副本（主从）
             if (!messageStoreConfig.isEnableDLegerCommitLog()) {
+                // mark1 从节点逻辑
                 if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {
+                    // mark1 配置了haMasterAddress的话直接从haMasterAddress获取
                     if (this.messageStoreConfig.getHaMasterAddress() != null && this.messageStoreConfig.getHaMasterAddress().length() >= 6) {
                         this.messageStore.updateHaMasterAddress(this.messageStoreConfig.getHaMasterAddress());
                         this.updateMasterHAServerAddrPeriodically = false;
                     } else {
+                        // mark1 没有的话定期更新haMasterAddress的开关打开
                         this.updateMasterHAServerAddrPeriodically = true;
                     }
                 } else {
+                    // mark1 主节点逻辑：定时打印主节点和从节点的offset值
                     this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                         @Override
                         public void run() {
@@ -457,8 +463,9 @@ public class BrokerController {
                 }
             }
 
+            // mark1 启用ssl
             if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
-                // Register a listener to reload SslContext
+                // mark1 Register a listener to reload SslContext
                 try {
                     fileWatchService = new FileWatchService(
                         new String[] {
@@ -499,12 +506,15 @@ public class BrokerController {
             }
             initialTransaction();
             initialAcl();
+            // mark1 初始化自定义的钩子
             initialRpcHooks();
         }
         return result;
     }
 
     private void initialTransaction() {
+        // mark1 初始化事务管理器
+        // mark2 具体的作用是啥？
         this.transactionalMessageService = ServiceProvider.loadClass(ServiceProvider.TRANSACTION_SERVICE_ID, TransactionalMessageService.class);
         if (null == this.transactionalMessageService) {
             this.transactionalMessageService = new TransactionalMessageServiceImpl(new TransactionalMessageBridge(this, this.getMessageStore()));
@@ -520,17 +530,20 @@ public class BrokerController {
     }
 
     private void initialAcl() {
+        // mark1 校验是否开启acl
         if (!this.brokerConfig.isAclEnable()) {
             log.info("The broker dose not enable acl");
             return;
         }
 
+        // mark1 通过配置的acl文件路径，加载acl文件
         List<AccessValidator> accessValidators = ServiceProvider.load(ServiceProvider.ACL_VALIDATOR_ID, AccessValidator.class);
         if (accessValidators == null || accessValidators.isEmpty()) {
             log.info("The broker dose not load the AccessValidator");
             return;
         }
 
+        // mark1 初始化acl管理器加到list中
         for (AccessValidator accessValidator: accessValidators) {
             final AccessValidator validator = accessValidator;
             accessValidatorMap.put(validator.getClass(),validator);
