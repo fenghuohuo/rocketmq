@@ -254,7 +254,7 @@ public class BrokerStartup {
                 System.exit(-3);
             }
 
-            // mark1 停止线程的方法
+            // mark1 停止线程前的钩子方法
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;
                 private AtomicInteger shutdownTimes = new AtomicInteger(0);
