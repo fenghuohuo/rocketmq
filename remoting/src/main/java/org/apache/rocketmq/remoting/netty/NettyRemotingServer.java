@@ -181,6 +181,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     @Override
     public void start() {
+        // mark1 使用netty创建工作线程 默认8个
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
             nettyServerConfig.getServerWorkerThreads(),
             new ThreadFactory() {
@@ -193,8 +194,10 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                 }
             });
 
+        // mark1 初始化一些handler
         prepareSharableHandlers();
 
+        // mark1 初始化serverBootstrap 会使用上面初始化的一些handler 包括 handshakeHandler encoder connectionManageHandler serverHandler
         ServerBootstrap childHandler =
             this.serverBootstrap.group(this.eventLoopGroupBoss, this.eventLoopGroupSelector)
                 .channel(useEpoll() ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
@@ -220,11 +223,13 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
                     }
                 });
 
+        // mark1 ByteBuffer是否开启缓存 开启的话设置childHandler的buffer大小
         if (nettyServerConfig.isServerPooledByteBufAllocatorEnable()) {
             childHandler.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         }
 
         try {
+            // mark2 给serverBootstrap分配一个端口并记录 关于netty暂时跳过
             ChannelFuture sync = this.serverBootstrap.bind().sync();
             InetSocketAddress addr = (InetSocketAddress) sync.channel().localAddress();
             this.port = addr.getPort();
@@ -232,10 +237,13 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
             throw new RuntimeException("this.serverBootstrap.bind().sync() InterruptedException", e1);
         }
 
+        // mark1 启动nettyEventExecutor 线程
+        // mark2 不知道nettyEventExecutor的具体作用
         if (this.channelEventListener != null) {
             this.nettyEventExecutor.start();
         }
 
+        // mark1 定期调用此方法以扫描已弃用的请求并使其过期。间隔1s
         this.timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override

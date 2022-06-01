@@ -1199,6 +1199,7 @@ public class DefaultMessageStore implements MessageStore {
         if (null == map) {
             ConcurrentMap<Integer, ConsumeQueue> newMap = new ConcurrentHashMap<Integer, ConsumeQueue>(128);
             ConcurrentMap<Integer, ConsumeQueue> oldMap = consumeQueueTable.putIfAbsent(topic, newMap);
+            // mark1 不存在则设置为newmap并返回
             if (oldMap != null) {
                 map = oldMap;
             } else {
@@ -1208,6 +1209,7 @@ public class DefaultMessageStore implements MessageStore {
 
         ConsumeQueue logic = map.get(queueId);
         if (null == logic) {
+            // mark2 ConsumeQueue应该是消费队列实例化 暂时先跳过
             ConsumeQueue newLogic = new ConsumeQueue(
                 topic,
                 queueId,

@@ -883,22 +883,29 @@ public class BrokerController {
     }
 
     public void start() throws Exception {
+        // mark1 启动消息存储服务 messageStore
         if (this.messageStore != null) {
             this.messageStore.start();
         }
 
+        // mark1 启动远程请求服务 remotingServer
         if (this.remotingServer != null) {
             this.remotingServer.start();
         }
 
+        // mark2 启动远程请求服务 fastRemotingServer
         if (this.fastRemotingServer != null) {
             this.fastRemotingServer.start();
         }
 
+        // mark1 启动文件监控服务 fileWatchService
+        // mark1 通过校验文件的hashcode判断文件是否发生变化 发生变化时会触发重新加载配置
         if (this.fileWatchService != null) {
             this.fileWatchService.start();
         }
 
+        // mark1 启动一个nettyClient，用于在broker离线时发出请求
+        // mark2 具体发出了什么请求？
         if (this.brokerOuterAPI != null) {
             this.brokerOuterAPI.start();
         }
