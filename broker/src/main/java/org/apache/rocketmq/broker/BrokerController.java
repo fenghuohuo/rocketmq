@@ -180,21 +180,34 @@ public class BrokerController {
         this.messageStoreConfig = messageStoreConfig;
         // 为什么写成这样？ 因为没有必要注入到bean中？循环依赖的问题？
         // 因为没有使用spring的框架。。。
+        // 消费者 offset 管理器
         this.consumerOffsetManager = new ConsumerOffsetManager(this);
+        // Broker 的 Topic 管理器
         this.topicConfigManager = new TopicConfigManager(this);
+        // 处理 Consumer 消息拉取处理器
         this.pullMessageProcessor = new PullMessageProcessor(this);
+        // Consumer 消息拉取长轮训机制
         this.pullRequestHoldService = new PullRequestHoldService(this);
+        // 监听收到 Producer 消息(通知 PullRequestHoldService)
         this.messageArrivingListener = new NotifyMessageArrivingListener(this.pullRequestHoldService);
         this.consumerIdsChangeListener = new DefaultConsumerIdsChangeListener(this);
+        // 消费者管理器(消费者&消费者组信息)
         this.consumerManager = new ConsumerManager(this.consumerIdsChangeListener);
+        // 消费者消费过滤器
         this.consumerFilterManager = new ConsumerFilterManager(this);
+        // 生产者管理器(过期生产者剔除等功能)
         this.producerManager = new ProducerManager();
+        // 心跳检测管理器(Producer/Consumer/FilterServer)
         this.clientHousekeepingService = new ClientHousekeepingService(this);
+        // broker 与客户端通信类
         this.broker2Client = new Broker2Client(this);
+        // consumer 配置管理器
         this.subscriptionGroupManager = new SubscriptionGroupManager(this);
+        // broker 与外部通信 API(与 NameServer)
         this.brokerOuterAPI = new BrokerOuterAPI(nettyClientConfig);
+        // Consumer 消息过滤器管理器
         this.filterServerManager = new FilterServerManager(this);
-
+        // 消息主-从同步处理器
         this.slaveSynchronize = new SlaveSynchronize(this);
 
         this.sendThreadPoolQueue = new LinkedBlockingQueue<Runnable>(this.brokerConfig.getSendThreadPoolQueueCapacity());

@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.broker.filter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.filter.ExpressionType;
 import org.apache.rocketmq.common.message.MessageConst;

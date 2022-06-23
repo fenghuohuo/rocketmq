@@ -108,12 +108,14 @@ public class BrokerConfig {
     private int commercialBigCount = 1;
     private int commercialBaseCount = 1;
 
+    // 是否通过堆内存传输数据
     private boolean transferMsgByHeap = true;
     private int maxDelayTime = 40;
 
     private String regionId = MixAll.DEFAULT_TRACE_REGION_ID;
     private int registerBrokerTimeoutMills = 6000;
 
+    // 超过40%重定向到其他的机器上
     private boolean slaveReadEnable = false;
 
     // 如果消费组消息消费堆积是否禁用该消费组继续消费消息

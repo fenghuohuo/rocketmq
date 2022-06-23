@@ -566,6 +566,7 @@ public class DefaultMessageStore implements MessageStore {
                     nextBeginOffset = nextOffsetCorrection(offset, maxOffset);
                 }
             } else {
+                // 根据偏移量查询消费队列中的元素
                 SelectMappedBufferResult bufferConsumeQueue = consumeQueue.getIndexBuffer(offset);
                 if (bufferConsumeQueue != null) {
                     try {
@@ -576,11 +577,15 @@ public class DefaultMessageStore implements MessageStore {
 
                         int i = 0;
                         final int maxFilterMessageCount = Math.max(16000, maxMsgNums * ConsumeQueue.CQ_STORE_UNIT_SIZE);
+                        // 记录磁盘
                         final boolean diskFallRecorded = this.messageStoreConfig.isDiskFallRecorded();
 
+                        // 初始化
                         getResult = new GetMessageResult(maxMsgNums);
 
+                        // 存储单元
                         ConsumeQueueExt.CqExtUnit cqExtUnit = new ConsumeQueueExt.CqExtUnit();
+                        // 变量queue
                         for (; i < bufferConsumeQueue.getSize() && i < maxFilterMessageCount; i += ConsumeQueue.CQ_STORE_UNIT_SIZE) {
                             long offsetPy = bufferConsumeQueue.getByteBuffer().getLong();
                             int sizePy = bufferConsumeQueue.getByteBuffer().getInt();
@@ -622,6 +627,7 @@ public class DefaultMessageStore implements MessageStore {
                                 continue;
                             }
 
+                            // 最终要获取的消息
                             SelectMappedBufferResult selectResult = this.commitLog.getMessage(offsetPy, sizePy);
                             if (null == selectResult) {
                                 if (getResult.getBufferTotalSize() == 0) {
@@ -660,7 +666,7 @@ public class DefaultMessageStore implements MessageStore {
                             * (this.messageStoreConfig.getAccessMessageInMemoryMaxRatio() / 100.0));
                         getResult.setSuggestPullingFromSlave(diff > memory);
                     } finally {
-
+                        // 清除缓存
                         bufferConsumeQueue.release();
                     }
                 } else {
@@ -675,6 +681,7 @@ public class DefaultMessageStore implements MessageStore {
             nextBeginOffset = nextOffsetCorrection(offset, 0);
         }
 
+        // 计数
         if (GetMessageStatus.FOUND == status) {
             this.storeStatsService.getGetMessageTimesTotalFound().add(1);
         } else {
