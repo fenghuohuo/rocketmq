@@ -70,6 +70,7 @@ public class PullRequestHoldService extends ServiceThread {
             try {
                 // mark1 轮训时间设置 长轮训默认5s 并且不能修改，短轮训默认1s 支持配置
                 // mark2 5s这个时间是怎么定义的？
+                // mark1 这里处理的是被挂起的请求， （包括请求失败的部分），所以这里的长短是根据请求失败的频率以及响应的时间来选择
                 if (this.brokerController.getBrokerConfig().isLongPollingEnable()) {
                     this.waitForRunning(5 * 1000);
                 } else {
